@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include <stdio.h>
-// #include <string.h>
 
 #define MAX 101 
 
@@ -12,7 +11,7 @@ typedef struct{
 TKontakt kontakty[42];
 
 // fce na porovnani retezcu
-int strcmp(char *str1, char *str2){
+int strcomp(char *str1, char *str2){
     while( ( *str1 != '\0' && *str2 != '\0' ) && *str1 == *str2 )
     {
         str1++;
@@ -28,60 +27,27 @@ int strcmp(char *str1, char *str2){
     }
 }
 
+// fce na kontrolu zadanych parametru
 int arg_control(int argc, char* argv[]){
-    // kontrola jestli josu argumenty zadané správně
-    if(argc > 3){
+    if(argc > 2){
         return 1;
     }
     else{
-        if(argc < 2){
-            return 1;
+        if(argc == 1){
+            return 2; // vypise se vsechno
         }
-        else{
-            if(argc == 2 && strcmp(argv[1], "seznam.txt") == 0){ // kdyžtak oddělat kontrolu názvu souboru
-            // pokud jsou jen dva parametry a druhý je soubor, tak nám program vypíše všechny rádky v souboru
-            // vyměnit potom za for cyklus, který nám projede celou strukturu a vypíše všechno
-                return 2; // vypíše se všechno
-	        }
-	        else {
-		        if(argc == 2 && strcmp(argv[1], "seznam.txt") != 0){
-                    return 1;
-                }
-                else{
-                    if(argc == 3 && strcmp(argv[2], "seznam.txt") == 0){
-                        int i = 0;
-		                while (argv[1][i] != '\0'){
-			                if(argv[1][i] < '0' || argv[1][i] > '9'){
-			        	        return 1;
-			                }
-                            else i++;
-		                }
-                    }
-                    else{
-                        int i = 0;
-		                while (argv[1][i] != '\0'){
-			                if(argv[1][i] < '0' || argv[1][i] > '9'){
-			        	        return 1;
-			                }
-                            else i++;
-		                }
+        else {
+            if(argc == 2){
+                int i = 0;
+                while (argv[1][i] != '\0'){
+                    if(argv[1][i] < '0' || argv[1][i] > '9'){
                         return 1;
-                    }    
+                    }
+                    else i++;
                 }
-	        }    
-        }
+            }   
+        }    
     }
-    return 0;
-}
-
-// fce na urceni jestli je retezec tvoreny pismeny
-int isalpha(char *str){
-    int i = 0;
-    while(str[i] != '\0'){
-		if(str[i] <= 'a' && str[i] >= 'z') {
-			return 1;
-		}
-    }    
     return 0;
 }
 
@@ -97,30 +63,23 @@ int strdel(char *str){
 	return i;
 }
 
-// Function to implement `strcpy()` function
-char* strcpy(char* destination, const char* source)
-{ 
-    // take a pointer pointing to the beginning of the destination string
-    char *p_destination = destination;
- 
-    // copy the C-string pointed by source into the array
-    // pointed by destination
-    while (*source != '\0')
+// fce na kopirovani retezcu
+char* strcopy(char* str1, const char* str2){
+    int i = 0; 
+    while (str2[i] != '\0')
     {
-        *destination = *source;
-        destination++;
-        source++;
+        str1[i] = str2[i];
+        i++;
     }
  
-    // include the terminating null character
-    *destination = '\0';
+    // odstranime '\n' a nahradime ho '\0'
+    str1[i-1] = '\0';
  
-    // the destination is returned by standard `strcpy()`
-    return p_destination;
+    return str1;
 }
 
+// fce na prevod retezce na mala pismena
 char* lowercase(char *str){
-    
     for(int i = 0; str[i] != '\0'; i++){
         if(str[i] >= 'A' && str[i] <= 'Z'){
             str[i] = str[i] + 32;
@@ -129,6 +88,7 @@ char* lowercase(char *str){
     return str;
 }
 
+// fce na vyhledani podretezce ve jmene kontaktu
 int search(char* radek, char* sub)
 {
     char pole[] = "+ adgjmptw";
@@ -140,8 +100,6 @@ int search(char* radek, char* sub)
 
     if(strdel(sub) == 0) return 1;
 
-    //převést radek na mala pismena pro zjednoduseni
-
     for(int i = 0; i <strdel(radek); i++)
     {
         znak[0] = sub[0];
@@ -149,12 +107,10 @@ int search(char* radek, char* sub)
         kontrola = pole[cislo];
         if(cislo == 9 || cislo == 7) pocet = 4;
         else if(cislo == 1) return 0; 
-        else if(cislo == 0) return 0; //0
+        else if(cislo == 0) return 0;
         else pocet = 3;
 
         nalezeno = 0;
-        
-        // printf("x1");
 
         for(int j = 0; j < pocet; j++)
         {
@@ -164,38 +120,30 @@ int search(char* radek, char* sub)
 
             }
         }
-        if(nalezeno == 1) //nalezen počátek potenciálního podřetězce
+        if(nalezeno == 1) //nalezen pocatek potencionalniho substringu
         {
-            // printf("x2");
-            for(int k = 0; k < strdel(sub); k++) // tenhle cyklus nám hlídá, aby se hledal celej zbytek substringu 
-            // změnil bych hodnotu k z 0 na 1, jinak by nedával řádek 199 smysl, protože bychom zkoumali znovu to stejné co už jsme našli
+            for(int k = 1; k < strdel(sub); k++) // tenhle cyklus nam hlida, aby se hledal cely zbytek substringu 
             {
-                if(i + k >= strdel(radek)) return 0; // nevím, jestli by nemělo být jen >, protože když by to byli např. poslední dvě písmena řetězce, tak by se to pokazilo ? nejspíš xD, dalo by se napsat asi i jako i + strdel(sub) > strdel(radek)
-                //zkontrolovat znaky radek[i+k] a sub[k]
-                znak[0] = sub[k]; // v prvním průchodu cyklem se do znaku uloží první číslo argumentu, ale to už jsme našli
+                if(i + k >= strdel(radek)) return 0;
+                znak[0] = sub[k]; 
                 cislo = atoi(znak);
                 kontrola = pole[cislo];
-                nalezeno = 0; // !!přidáno!!
+                nalezeno = 0; 
+
                 if(cislo == 9 || cislo == 7) pocet = 4;
                 else if(cislo == 1) return 0; 
-                else if(cislo == 0) return 0; //0
+                else if(cislo == 0) return 0; 
                 else pocet = 3;
-                
-                // printf("x3");
 
                 for(int l = 0; l < pocet; l++)
                 {
-                    // printf("x4");
-                    // nalezeno = 0; 
-                    if(radek[i + k] == (kontrola + l)) // správně imo
+                    if(radek[i + k] == (kontrola + l))
                     {
-                        // printf("%c", (kontrola + l));
                         nalezeno = 1;
                         break;
                     }  
-                    else nalezeno = 0; // !!přidáno!! // v podstatě pořád to samé jako předtím, akorát přemístěné a napsané o něco jinak
+                    else nalezeno = 0;
                 }
-                // někde by tady podle mě měla být podmínka, že pokud je nalezeno == 1, tak se pokračuje, jinak break; je zbytečný pokračovat dál, když písmeno po i už není ze substringu
                 if (nalezeno == 0) break;                
             }
             if(nalezeno == 1) return 1;            
@@ -204,7 +152,8 @@ int search(char* radek, char* sub)
     return 0; 
 }
 
-int number_search(char* num, char* subnum){ // funkce na vyhledání argv[1] v řádku s číslem
+// funkce na vyhledani substringu v cisle
+int number_search(char* num, char* subnum){ 
     int i = 0, j = 0;
     char *p_1, *p_2, *p_3;
     p_1 = num;
@@ -221,34 +170,27 @@ int number_search(char* num, char* subnum){ // funkce na vyhledání argv[1] v �
             }
             p_2 = subnum;
             if(j == strdel(subnum)){
-                return 1; // vrací 1 pokud se argv[1] v čísle nachází
+                return 1; // vraci 1, pokud se substring v cisle nachazi
             }
         }
         p_1++;
     }
-    return 0; // vrací 0 pokud se argv[1] NEnachází v čísle
+    return 0; // vrací 0, pokud se substring nenachazi v cisle
 }
 
-void trim(char* radek)
-{
-  for(int i = 0; i <strdel(radek); i++)
-  { 
-    if (radek[i] == '\n') radek[i] = '\0';
-  }
-}
+// void trim(char* radek)
+// {
+//   for(int i = 0; i <strdel(radek); i++)
+//   { 
+//     if (radek[i] == '\n') radek[i] = '\0';
+//   }
+// }
 
 int main(int argc, char *argv[]){
     char radek[MAX];
     int i = 0, pocet_radku = 0, zmena = 0;
-    // printf("Pocet argumentu: %d\n", argc);    
-    // printf("Prvni argument: %s\n", argv[0]);
-    // printf("Druhy argument: %s\n", argv[1]);
-    // printf("Treti argument: %s\n", argv[2]);
-    // // char soubor[] = *argv[2];
-    // FILE* f; 
-    // f = fopen(argv[2], "r");
 
-    if(arg_control(argc, argv) == 0){ // tohle potom předělat na 1
+    if(arg_control(argc, argv) == 1){ // pokud funkce vrati 1, znamena to, ze nejaky z parametru je spatne zadany
         fprintf(stderr, "ERROR wrong ARGS");
         return 1;
     }
@@ -258,18 +200,15 @@ int main(int argc, char *argv[]){
                 fprintf(stderr, "ERROR long NAME/NUMBER");
                     return 1;
             }
-            else{    // na sudych radcich zacinajicich na 0 jsou jmena kontaktu, na lichych radcich zacinajicich 1 jsou cisla kontaktu
-            // přiřazení do struktury, podle toho, jestli je řádek tvořený písmeny nebo čísly
-                zmena = 0; // pokud bude změna 0, tak můžeme vypsat celý kontakt, jak jméno, tak číslo, pokud bude != 0 tak už jsme toto číslo a jméno vypisovali, změna se mění v případě, že nám funkce vrátí pravdivé hodnoty, že se buďto ve jméně nebo čísle nachází podřetězec
+            else{    
+                zmena = 0; // 0 -> jeste jsme nevypsali, 1 -> uz jsme vypsali
                 if(pocet_radku % 2 == 0){
-                    strcpy(kontakty[i].jmeno, lowercase(radek));
-                    trim(kontakty[i].jmeno);     
-                    pocet_radku++;  
-                                  
+                    strcopy(kontakty[i].jmeno, lowercase(radek));
+                //    trim(kontakty[i].jmeno);
+                    pocet_radku++;                                  
                 }
                 else{
-                    strcpy(kontakty[i].cislo, radek);
-            
+                    strcopy(kontakty[i].cislo, radek);
                     pocet_radku++;
                     i++;    
                 }
@@ -277,34 +216,33 @@ int main(int argc, char *argv[]){
         }        
     }
 
-    if(arg_control(argc, argv) == 2){
+    if(arg_control(argc, argv) == 2){ // pokud nam funkce vrati 2, tak se vypisuje cely seznam kontaktu
         for(i = 0; i < pocet_radku/2; i++){
             printf("%s, %s", kontakty[i].jmeno, kontakty[i].cislo);
-
+            printf("\n");
         }
         return 0;        
     }
 
-    for(i = 0; i < pocet_radku/2; i++){
-        if(search(kontakty[i].jmeno, argv[1]) == 1){
+    for(i = 0; i < pocet_radku/2; i++){ 
+        if(search(kontakty[i].jmeno, argv[1]) == 1){ // pokud nam funkce vrati 1, znamena to, ze kontakt obsahuje substring 
             printf("%s, %s", kontakty[i].jmeno, kontakty[i].cislo);
+            printf("\n");
             zmena++;
             continue;
         }
         else{
-            if(number_search(kontakty[i].cislo, argv[1]) == 1 /*&& zmena == 0*/){
+            if(number_search(kontakty[i].cislo, argv[1]) == 1){ // pokud nam funkce vrati 1, znamena to, ze kontakt obsahuje substring 
                 printf("%s, %s", kontakty[i].jmeno, kontakty[i].cislo);
+                printf("\n");
+                zmena++;
             }
         } 
     }
 
-
-    // for(i = 0; i < 2; i++){
-    // printf("Jmeno a Prijmeni: %s", kontakty[i].jmeno);
-    // printf("Cislo: %s", kontakty[i].cislo);
-    // }  
-
-    
+    if(zmena == 0){
+        printf("Not found");
+    }
 
     return 0;
 }
